@@ -13,7 +13,6 @@ export type GetAdsParams = {
 
 export const getAds = async (params: GetAdsParams): Promise<AdsGetOut> => {
   const { data } = await apiClient.get('/items', { params });
-  console.log(data)
   return data;
 };
 

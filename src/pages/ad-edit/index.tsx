@@ -72,19 +72,17 @@ export default function AdEditPage() {
 
     return (
         <Box p={3}>
-            <Typography variant="h4">Редактирование</Typography>
+            <Typography>Редактирование</Typography>
 
-            {/* CATEGORY */}
             <Select
                 value={form.category}
                 onChange={(e) => handleChange('category', e.target.value)}
             >
-                <MenuItem value="auto">Транспорт</MenuItem>
+                <MenuItem value="auto">Авто</MenuItem>
                 <MenuItem value="real_estate">Недвижимость</MenuItem>
                 <MenuItem value="electronics">Электроника</MenuItem>
             </Select>
 
-            {/* TITLE */}
             <TextField
                 label="Название"
                 value={form.title}
@@ -93,7 +91,6 @@ export default function AdEditPage() {
                 sx={{ mt: 2 }}
             />
 
-            {/* PRICE */}
             <TextField
                 label="Цена"
                 type="number"
@@ -103,7 +100,8 @@ export default function AdEditPage() {
                 sx={{ mt: 2 }}
             />
 
-            {/* DESCRIPTION */}
+            <FormParams form={form} setForm={setForm} />
+
             <TextField
                 label="Описание"
                 value={form.description || ''}
@@ -114,12 +112,8 @@ export default function AdEditPage() {
                 sx={{ mt: 2 }}
             />
 
-            {/* 🔥 PARAMS */}
-            <FormParams form={form} setForm={setForm} />
-
-            {/* ACTIONS */}
             <Box sx={{ mt: 3, display: 'flex', gap: 2 }}>
-                <Button variant="contained" onClick={handleSave}>
+                <Button onClick={handleSave}>
                     Сохранить
                 </Button>
 
