@@ -1,6 +1,8 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { updateAdById } from './api';
-import type { AdUpdateIn } from '../model/types';
+import type { Ad, AdUpdateIn } from '../model/types';
+import { getDescriptionPrompt, getPricePrompt } from '../../../features/ai/model/promts';
+import { generateDescription, suggestPrice } from '../../../features/ai/api/api';
 
 export const useUpdateAd = () => {
   const queryClient = useQueryClient();
@@ -15,3 +17,23 @@ export const useUpdateAd = () => {
     },
   });
 };
+
+export const useGenerateDescription = () => {
+  return useMutation({
+    mutationFn: async (ad: Ad) => {
+      const prompt = getDescriptionPrompt(ad);
+      const improvedText = await generateDescription(prompt);
+      return improvedText;
+    },
+  });
+};
+
+export const useSuggestPrice = () => {
+  return useMutation({
+    mutationFn: async (ad: Ad) => {
+      const prompt = getPricePrompt(ad);
+      const priceSuggestion = await suggestPrice(prompt);
+      return parseInt(priceSuggestion.replace(/\D/g, ''), 10) || 0; 
+    },
+  });
+}
