@@ -1,14 +1,3 @@
-export type Ad = {
-  id: string;
-  category: 'auto' | 'real_estate' | 'electronics';
-  title: string;
-  description?: string;
-  price: number;
-  createdAt?: string;
-  params: AutoAdParams | RealEstateAdParams | ElectronicsAdParams;
-  needsRevision: boolean;
-};
-
 export type AdsGetOut = {
   items: Ad[];
   total: number;
@@ -45,3 +34,38 @@ export type ElectronicsAdParams = {
   condition?: 'new' | 'used';
   color?: string;
 };
+
+export type AutoAd = {
+  id: string;
+  category: 'auto';
+  title: string;
+  description?: string;
+  price: number;
+  createdAt?: string;
+  params: AutoAdParams;
+  needsRevision: boolean;
+};
+
+export type RealEstateAd = {
+  id: string;
+  category: 'real_estate';
+  title: string;
+  description?: string;
+  price: number;
+  createdAt?: string;
+  params: RealEstateAdParams;
+  needsRevision: boolean;
+};
+
+export type ElectronicsAd = {
+  id: string;
+  category: 'electronics';
+  title: string;
+  description?: string;
+  price: number;
+  createdAt?: string;
+  params: ElectronicsAdParams;
+  needsRevision: boolean;
+};
+
+export type Ad = AutoAd | RealEstateAd | ElectronicsAd;

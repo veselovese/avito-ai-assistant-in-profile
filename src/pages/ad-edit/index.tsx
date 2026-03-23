@@ -1,28 +1,132 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { getAdById } from '../../entities/ad/api/api';
-import { Button, Typography } from '@mui/material';
+import { useUpdateAd } from '../../entities/ad/api/useUpdateAd';
+import { FormParams } from '../../features/ad-edit/ui/form-params';
+import { CircularProgress } from '@mui/material';
 
-export default function AdDetailsPage() {
+import {
+    TextField,
+    Button,
+    Select,
+    MenuItem,
+    Box,
+    Typography,
+} from '@mui/material';
+
+import { useEffect, useState } from 'react';
+
+export default function AdEditPage() {
     const { id } = useParams();
     const navigate = useNavigate();
+    const storageKey = `ad-draft-${id}`;
 
     const { data, isLoading, isError } = useQuery({
-        queryKey: [id],
+        queryKey: ['item', id],
         queryFn: () => getAdById(id!),
+        enabled: !!id,
     });
+    const updateMutation = useUpdateAd();
 
-    if (isLoading) return <div>Загрузка...</div>;
-    if (isError || !data) return <div>Нет данных</div>;
+    const [form, setForm] = useState<any>(null);
+
+    useEffect(() => {
+        if (!data) return;
+
+        const saved = localStorage.getItem(storageKey);
+
+        if (saved) {
+            setForm(JSON.parse(saved));
+        } else {
+            setForm(data);
+        }
+    }, [data, storageKey]);
+
+    useEffect(() => {
+        if (!form) return;
+
+        localStorage.setItem(storageKey, JSON.stringify(form));
+    }, [form, storageKey]);
+
+    if (isLoading || !form) return <CircularProgress />;
+    { isError && <Typography color="error">Ошибка загрузки</Typography> }
+
+    const handleChange = (field: string, value: any) => {
+        setForm((prev: any) => ({
+            ...prev,
+            [field]: value,
+        }));
+    };
+
+    const handleSave = () => {
+        updateMutation.mutate(
+            { id: id!, data: form },
+            {
+                onSuccess: () => {
+                    localStorage.removeItem(storageKey);
+                    navigate(`/ads/${id}`);
+                },
+            }
+        );
+    };
 
     return (
-        <div>
-            <Typography>{data.title}</Typography>
-            <Typography>{data.price} ₽</Typography>
+        <Box p={3}>
+            <Typography variant="h4">Редактирование</Typography>
 
-            <Typography>{data.description || 'Нет описания'}</Typography>
+            {/* CATEGORY */}
+            <Select
+                value={form.category}
+                onChange={(e) => handleChange('category', e.target.value)}
+            >
+                <MenuItem value="auto">Транспорт</MenuItem>
+                <MenuItem value="real_estate">Недвижимость</MenuItem>
+                <MenuItem value="electronics">Электроника</MenuItem>
+            </Select>
 
-            <Button onClick={() => navigate(`/ads/${id}/edit`)}>Редактировать</Button>
-        </div>
+            {/* TITLE */}
+            <TextField
+                label="Название"
+                value={form.title}
+                onChange={(e) => handleChange('title', e.target.value)}
+                fullWidth
+                sx={{ mt: 2 }}
+            />
+
+            {/* PRICE */}
+            <TextField
+                label="Цена"
+                type="number"
+                value={form.price}
+                onChange={(e) => handleChange('price', Number(e.target.value))}
+                fullWidth
+                sx={{ mt: 2 }}
+            />
+
+            {/* DESCRIPTION */}
+            <TextField
+                label="Описание"
+                value={form.description || ''}
+                onChange={(e) => handleChange('description', e.target.value)}
+                fullWidth
+                multiline
+                rows={4}
+                sx={{ mt: 2 }}
+            />
+
+            {/* 🔥 PARAMS */}
+            <FormParams form={form} setForm={setForm} />
+
+            {/* ACTIONS */}
+            <Box sx={{ mt: 3, display: 'flex', gap: 2 }}>
+                <Button variant="contained" onClick={handleSave}>
+                    Сохранить
+                </Button>
+
+                <Button onClick={() => navigate(`/ads/${id}`)}>
+                    Отменить
+                </Button>
+            </Box>
+        </Box>
     );
 }

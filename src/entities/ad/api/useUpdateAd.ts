@@ -2,7 +2,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { updateAdById } from './api';
 import type { AdUpdateIn } from '../model/types';
 
-export const useUpdateItem = () => {
+export const useUpdateAd = () => {
   const queryClient = useQueryClient();
 
   return useMutation({

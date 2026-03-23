@@ -9,7 +9,8 @@ import {
     MenuItem,
     Button,
     Pagination,
-    Box
+    Box,
+    CircularProgress
 } from '@mui/material';
 import { AdCard } from '../../entities/ad/ui/ad-card';
 import { useFilters } from '../../features/filters/models/useFilters';
@@ -93,8 +94,6 @@ export default function AdsListPage() {
                 <MenuItem value="createdAt_asc">По новизне (сначала старые)</MenuItem>
                 <MenuItem value="title_asc">По названию (А → Я)</MenuItem>
                 <MenuItem value="title_desc">По названию (Я → А)</MenuItem>
-                <MenuItem value="price_desc">По цене (сначала дешевле)</MenuItem>
-                <MenuItem value="price_asc">По цене (сначала дороже)</MenuItem>
             </Select>
             <Box sx={{ my: 2 }}>
                 {categoryOptions.map((cat) => (
@@ -118,7 +117,7 @@ export default function AdsListPage() {
             </Box>
             <Button onClick={reset}>Сбросить фильтры</Button>
             <div style={{ position: 'relative' }}>
-                {isLoading && <div>Загрузка...</div>}
+                {isLoading && <CircularProgress />}
 
                 {isError && <div>Ошибка загрузки</div>}
 
