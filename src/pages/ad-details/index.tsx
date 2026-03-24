@@ -19,7 +19,7 @@ export default function AdDetailsPage() {
     const { id } = useParams();
     const navigate = useNavigate();
 
-    const { data, isLoading, isError } = useQuery({
+    const { data, isLoading, isError, refetch } = useQuery({
         queryKey: ['item', id],
         queryFn: () => getAdById(id!),
         enabled: !!id,
@@ -66,9 +66,18 @@ export default function AdDetailsPage() {
             </Box>
             <Divider flexItem />
 
-            {isLoading && <CircularProgress />}
-            {isError && <Typography color="error">Ошибка загрузки</Typography>}
-
+            {isLoading && <CircularProgress sx={{ m: '0 auto', display: 'flex', mt: '100px' }} />}
+            {isError && <Box sx={{ m: '0 auto', display: 'flex', mt: '100px', alignItems: 'center', flexDirection: 'column', gap: '16px' }}>
+                <Typography >Упс, что-то пошло не так. Поробуйте обновить страницу сейчас или чуть позже</Typography>
+                <Button
+                    variant="outlined"
+                    onClick={() => refetch()}
+                    disabled={isLoading}
+                    sx={{ fontSize: '14px', fontWeight: 400, textTransform: 'none' }}
+                >
+                    Обновить страницу
+                </Button>
+            </Box>}
             {data && (
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
                     <Box sx={{ display: 'flex', gap: '32px' }}>

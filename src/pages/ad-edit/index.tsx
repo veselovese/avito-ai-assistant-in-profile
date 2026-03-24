@@ -42,7 +42,7 @@ export default function AdEditPage() {
 
     const storageKey = `ad-draft-${id}`;
 
-    const { data, isLoading, isError } = useQuery({
+    const { data, isLoading, isError, refetch } = useQuery({
         queryKey: ['item', id],
         queryFn: () => getAdById(id!),
         enabled: !!id,
@@ -68,9 +68,19 @@ export default function AdEditPage() {
         localStorage.setItem(storageKey, JSON.stringify(form));
     }, [form, storageKey]);
 
-    if (isLoading) return <CircularProgress />;
+    if (isLoading) return <CircularProgress sx={{ m: '0 auto', display: 'flex', mt: '100px' }} />;
 
-    if (isError) return <Typography color="error">Ошибка загрузки объявления</Typography>;
+    if (isError) return <Box sx={{ m: '0 auto', display: 'flex', mt: '100px', alignItems: 'center', flexDirection: 'column', gap: '16px' }}>
+        <Typography >Упс, что-то пошло не так. Поробуйте обновить страницу сейчас или чуть позже</Typography>
+        <Button
+            variant="outlined"
+            onClick={() => refetch()}
+            disabled={isLoading}
+            sx={{ fontSize: '14px', fontWeight: 400, textTransform: 'none' }}
+        >
+            Обновить страницу
+        </Button>
+    </Box>;
 
     if (!form) return <CircularProgress />;
 

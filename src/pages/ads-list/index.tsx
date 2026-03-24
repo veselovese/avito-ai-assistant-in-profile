@@ -5,7 +5,6 @@ import {
     TextField,
     Checkbox,
     FormControlLabel,
-    Select,
     MenuItem,
     Button,
     Pagination,
@@ -25,7 +24,7 @@ import {
 } from '@mui/material';
 import {
     ExpandLess,
-    ExpandMore
+    ExpandMore,
 } from '@mui/icons-material';
 import { AdCard } from '../../entities/ad/ui/ad-card';
 import { useFilters } from '../../features/filters/models/useFilters';
@@ -119,7 +118,7 @@ export default function AdsListPage() {
         { label: 'Недвижимость', value: 'real_estate' },
     ];
 
-    const { data, isLoading, isError } = useQuery({
+    const { data, isLoading, isError, refetch } = useQuery({
         queryKey: [
             'items',
             filters.search,
@@ -145,18 +144,19 @@ export default function AdsListPage() {
 
     return (
         <Box component="section" sx={{ maxWidth: 'calc(100% - 64px)', m: '0 auto', py: '32px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            <Box sx={{ }}>
+            <Box sx={{}}>
                 <Typography variant='h1'>Мои объявления</Typography>
-                <Typography variant='h2'>{data?.total} объявления</Typography>
+                <Typography variant='h2'>{data?.total ? data.total + ' объявления' : 'Обновляем..'} </Typography>
             </Box>
             <Box sx={{ bgcolor: 'background.paper', display: 'flex', gap: '24px', borderRadius: '8px', p: '12px' }}>
                 <TextField
-                    label="Найти объявления...."
+                    placeholder="Найти объявления...."
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
                     sx={{ width: '100%' }}
                 />
-                <Select
+                <TextField
+                    select
                     value={`${sortColumn}_${sortDirection}`}
                     onChange={(e) => {
                         const value = e.target.value as string;
@@ -166,17 +166,18 @@ export default function AdsListPage() {
                             direction as any
                         );
                     }}
+                    sx={{ minWidth: '250px', fontSize: '14px' }}
                 >
                     <MenuItem value="createdAt_desc">По новизне (сначала новые)</MenuItem>
                     <MenuItem value="createdAt_asc">По новизне (сначала старые)</MenuItem>
                     <MenuItem value="title_asc">По названию (А → Я)</MenuItem>
                     <MenuItem value="title_desc">По названию (Я → А)</MenuItem>
-                </Select>
+                </TextField>
             </Box>
             <Box sx={{ display: 'flex', gap: '24px' }}>
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: '10px', maxWidth: 256, minWidth: 256 }}>
                     <List
-                        sx={{ display: 'flex', flexDirection: 'column', width: '100%', bgcolor: 'background.paper', borderRadius: '8px', p: '16px', gap: '10px', }}
+                        sx={{ display: 'flex', flexDirection: 'column', width: '100%', bgcolor: 'background.paper', borderRadius: '8px', p: '16px', }}
                         component="nav"
                         subheader={
                             <ListSubheader component="p" sx={{ p: 0, m: 0, lineHeight: '100%', color: 'text.primary', fontSize: '16px' }}>
@@ -184,8 +185,13 @@ export default function AdsListPage() {
                             </ListSubheader>
                         }
                     >
-                        <ListItemButton onClick={handleClick}>
-                            <ListItemText primary="Категория" />
+                        <ListItemButton onClick={handleClick} sx={{ my: '5px', px: 0, py: '5px' }}>
+                            <ListItemText primary="Категория" sx={{
+                                '& .MuiTypography-root': {
+                                    fontWeight: 400,
+                                    fontSize: '14px'
+                                }
+                            }} />
                             {open ? <ExpandLess /> : <ExpandMore />}
                         </ListItemButton>
                         {categoryOptions.map((cat) => (
@@ -205,11 +211,24 @@ export default function AdsListPage() {
                                         />
                                     }
                                     label={cat.label}
+                                    sx={{
+                                        m: 0,
+                                        my: '8px',
+                                        '& .MuiFormControlLabel-label': {
+                                            fontSize: '14px',
+                                            fontWeight: 400,
+                                            padding: 0,
+                                            ml: '8px'
+                                        },
+                                        '& .MuiCheckbox-root': {
+                                            padding: 0,
+                                        },
+                                    }}
                                 />
                             </Collapse>
                         ))}
                         <Divider variant="middle" flexItem />
-                        <ListItem>
+                        <ListItem sx={{ p: 0, mt: '10px' }}>
                             <FormControlLabel
                                 labelPlacement="start"
                                 label="Только требующие доработок"
@@ -217,14 +236,25 @@ export default function AdsListPage() {
                                     <IOSSwitch checked={needsRevision}
                                         onChange={(e) => setNeedsRevision(e.target.checked)} />
                                 }
+                                sx={{ p: 0, m: 0, }}
                             />
                         </ListItem>
                     </List>
-                    <Button onClick={reset}>Сбросить фильтры</Button>
+                    <Button onClick={reset} sx={{ bgcolor: 'background.paper', fontSize: '14px', fontWeight: 400, textTransform: 'none', color: 'text.secondary' }}>Сбросить фильтры</Button>
                 </Box>
                 <Box sx={{ width: '100%' }}>
-                    {isLoading && <CircularProgress />}
-                    {isError && <div>Ошибка загрузки</div>}
+                    {isLoading && <CircularProgress sx={{ m: '0 auto', display: 'flex', mt: '100px' }} />}
+                    {isError && <Box sx={{ m: '0 auto', display: 'flex', mt: '100px', alignItems: 'center', flexDirection: 'column', gap: '16px' }}>
+                        <Typography >Упс, что-то пошло не так. Поробуйте обновить страницу сейчас или чуть позже</Typography>
+                        <Button
+                            variant="outlined"
+                            onClick={() => refetch()}
+                            disabled={isLoading}
+                            sx={{ fontSize: '14px', fontWeight: 400, textTransform: 'none' }}
+                        >
+                            Обновить страницу
+                        </Button>
+                    </Box>}
                     <Grid container spacing={2}>
                         {!isLoading && !isError && data?.items.map((ad) => (
                             <AdCard key={ad.id} ad={ad} />
