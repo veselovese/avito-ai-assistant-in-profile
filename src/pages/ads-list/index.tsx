@@ -144,7 +144,7 @@ export default function AdsListPage() {
     });
 
     return (
-        <Box component="section" sx={{ maxWidth: 'calc(100% - 64px)', m: '12px auto 15px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+        <Box component="section" sx={{ maxWidth: 'calc(100% - 64px)', m: '12px auto 0', display: 'flex', flexDirection: 'column', gap: '16px' }}>
             <Box sx={{ py: '12px' }}>
                 <Typography variant='h1'>Мои объявления</Typography>
                 <Typography variant='h2'>{data?.total} объявления</Typography>

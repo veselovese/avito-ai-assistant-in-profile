@@ -32,12 +32,46 @@ export const theme = createTheme({
 
         body1: {
             fontSize: '16px',
-            fontWeight: 400,
+            fontWeight: 500,
+            color: '#000000',
         },
         body2: {
             fontSize: '14px',
-            fontWeight: 400,
+            fontWeight: 500,
+            color: '#000000',
 
+        },
+        subtitle1: {
+            fontSize: '16px',
+            fontWeight: 400,
+            color: '#000000',
+            lineHeight: 1.5
+        },
+        subtitle2: {
+            fontSize: '14px',
+            fontWeight: 400,
+            color: '#000000',
+            lineHeight: 1.5
         }
+    },
+    components: {
+        MuiPaper: {
+            styleOverrides: {
+                root: {
+                    borderRadius: 16,
+                    backgroundColor: 'background.paper',
+                    boxShadow: 'none',
+                },
+            },
+        },
+
+        MuiCard: {
+            styleOverrides: {
+                root: {
+                    boxShadow: 'none',
+                    padding: 16,
+                },
+            },
+        },
     }
 });

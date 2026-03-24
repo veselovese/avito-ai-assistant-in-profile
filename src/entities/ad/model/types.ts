@@ -42,6 +42,7 @@ export type AutoAd = {
   description?: string;
   price: number;
   createdAt?: string;
+  updatedAt?: string;
   params: AutoAdParams;
   needsRevision: boolean;
 };
@@ -53,6 +54,7 @@ export type RealEstateAd = {
   description?: string;
   price: number;
   createdAt?: string;
+  updatedAt?: string;
   params: RealEstateAdParams;
   needsRevision: boolean;
 };
@@ -64,6 +66,7 @@ export type ElectronicsAd = {
   description?: string;
   price: number;
   createdAt?: string;
+  updatedAt?: string;
   params: ElectronicsAdParams;
   needsRevision: boolean;
 };

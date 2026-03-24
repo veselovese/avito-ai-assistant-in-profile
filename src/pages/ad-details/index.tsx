@@ -1,14 +1,17 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { getAdById } from '../../entities/ad/api/api';
+import { format } from 'date-fns';
+import { ru } from 'date-fns/locale';
 
 import {
     Typography,
     Button,
     Box,
-    Paper,
-    Chip,
     CircularProgress,
+    Card,
+    Divider,
+    Skeleton,
 } from '@mui/material';
 
 import { AdParams } from '../../entities/ad/ui/ad-params';
@@ -24,51 +27,62 @@ export default function AdDetailsPage() {
     });
 
     return (
-        <Box p={3}>
-            <Button onClick={() => navigate('/ads')}>← Назад</Button>
+        <Card component="section" sx={{ maxWidth: 'calc(100% - 64px)', m: '32px auto 0', display: 'flex', flexDirection: 'column', gap: '32px' }}>
+            <Box>
+                <Button onClick={() => navigate('/ads')}>← Назад</Button>
+                {data && (
+                    <Box sx={{}}>
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                            <Typography variant="h1" sx={{ fontSize: 32 }}>{data.title}</Typography>
+
+                            <Typography variant="body1" sx={{ fontSize: 32, fontWeight: 500 }}>
+                                {data.price} ₽
+                            </Typography>
+                        </Box>
+
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: '12px' }}>
+                            <Button
+                                variant="contained"
+                                onClick={() => navigate(`/ads/${id}/edit`)}
+                            >
+                                Редактировать
+                            </Button>
+                            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'end' }}>
+                                <Typography variant="subtitle1" sx={{ color: 'text.secondary' }}>
+                                    Опубликовано:{' '}
+                                    {data.createdAt
+                                        ? format(new Date(data.createdAt), 'd MMMM HH:mm', { locale: ru })
+                                        : 'Не указано'}
+                                </Typography>
+                                <Typography variant="subtitle1" sx={{ color: 'text.secondary' }}>
+                                    Отредактировано:{' '}
+                                    {data.updatedAt
+                                        ? format(new Date(data.updatedAt), 'd MMMM HH:mm', { locale: ru })
+                                        : 'Не указано'}
+                                </Typography>
+                            </Box>
+                        </Box>
+                    </Box>
+                )}
+            </Box>
+            <Divider flexItem />
 
             {isLoading && <CircularProgress />}
             {isError && <Typography color="error">Ошибка загрузки</Typography>}
 
             {data && (
-                <Paper sx={{ p: 3, mt: 2 }}>
-                    <Typography variant="h4">{data.title}</Typography>
-
-                    <Typography variant="h5" sx={{ mt: 1 }}>
-                        {data.price} ₽
-                    </Typography>
-
-                    <Typography sx={{ mt: 1 }}>
-                        Категория: {data.category}
-                    </Typography>
-
-                    {data.needsRevision && (
-                        <Chip
-                            label="Требует доработки"
-                            color="warning"
-                            sx={{ mt: 2 }}
-                        />
-                    )}
-
-                    <Typography sx={{ mt: 3 }}>
-                        {data.description || 'Описание отсутствует'}
-                    </Typography>
-
-                    <Box sx={{ mt: 3 }}>
-                        <Typography variant="h6">Характеристики</Typography>
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
+                    <Box sx={{ display: 'flex', gap: '32px' }}>
+                        <Skeleton variant="rectangular" width='480px' height='360px' animation="wave" />
                         <AdParams ad={data} />
                     </Box>
-
-                    <Box sx={{ mt: 4, display: 'flex', gap: 2 }}>
-                        <Button
-                            variant="contained"
-                            onClick={() => navigate(`/ads/${id}/edit`)}
-                        >
-                            Редактировать
-                        </Button>
+                    <Box>
+                        <Typography sx={{ mt: 3 }}>
+                            {data.description || 'Описание отсутствует'}
+                        </Typography>
                     </Box>
-                </Paper>
+                </Box>
             )}
-        </Box>
+        </Card>
     );
 }
