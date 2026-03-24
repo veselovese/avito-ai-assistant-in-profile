@@ -144,7 +144,7 @@ export default function AdsListPage() {
     });
 
     return (
-        <Box component="section" sx={{ maxWidth: 'calc(100% - 64px)', m: '12px auto 0', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+        <Box component="section" sx={{ maxWidth: 'calc(100% - 64px)', m: '12px auto 24px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
             <Box sx={{ py: '12px' }}>
                 <Typography variant='h1'>Мои объявления</Typography>
                 <Typography variant='h2'>{data?.total} объявления</Typography>
@@ -223,21 +223,22 @@ export default function AdsListPage() {
                     <Button onClick={reset}>Сбросить фильтры</Button>
                 </Box>
                 <Box sx={{ width: '100%' }}>
+                    {isLoading && <CircularProgress />}
+                    {isError && <div>Ошибка загрузки</div>}
                     <Grid container spacing={2}>
-                        {isLoading && <CircularProgress />}
-
-                        {isError && <div>Ошибка загрузки</div>}
-
                         {!isLoading && !isError && data?.items.map((ad) => (
                             <AdCard key={ad.id} ad={ad} />
                         ))}
                     </Grid>
-                    <Pagination
-                        count={Math.ceil((data?.total || 0) / filters.pageSize)}
-                        page={filters.page}
-                        onChange={(_, page) => filters.setPage(page)}
-                        variant="outlined" shape="rounded"
-                    />
+                    {!isLoading && !isError &&
+                        <Pagination
+                            count={Math.ceil((data?.total || 0) / filters.pageSize)}
+                            page={filters.page}
+                            onChange={(_, page) => filters.setPage(page)}
+                            variant="outlined" shape="rounded"
+                            sx={{ mt: '10px' }}
+                        />
+                    }
                 </Box>
             </Box>
         </Box>

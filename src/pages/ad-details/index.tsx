@@ -76,8 +76,9 @@ export default function AdDetailsPage() {
                         <Skeleton variant="rectangular" width='480px' height='360px' animation="wave" />
                         <AdParams ad={data} />
                     </Box>
-                    <Box>
-                        <Typography sx={{ mt: 3 }}>
+                    <Box sx={{ maxWidth: '480px' }}>
+                        <Typography variant='body1' sx={{ fontSize: '24px' }}>Описание</Typography>
+                        <Typography variant='subtitle1' sx={{ mt: '16px' }}>
                             {data.description || 'Описание отсутствует'}
                         </Typography>
                     </Box>
