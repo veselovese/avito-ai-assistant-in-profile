@@ -9,7 +9,6 @@ import {
     Button,
     Box,
     CircularProgress,
-    Card,
     Divider,
     Skeleton,
 } from '@mui/material';
@@ -27,15 +26,15 @@ export default function AdDetailsPage() {
     });
 
     return (
-        <Card component="section" sx={{ maxWidth: 'calc(100% - 64px)', m: '32px auto 0', display: 'flex', flexDirection: 'column', gap: '32px' }}>
+        <Box component="section" sx={{ maxWidth: 'calc(100% - 64px)', m: '0 auto', py: '32px', display: 'flex', flexDirection: 'column', gap: '32px' }}>
             <Box>
                 <Button onClick={() => navigate('/ads')}>← Назад</Button>
                 {data && (
                     <Box sx={{}}>
                         <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                            <Typography variant="h1" sx={{ fontSize: 32 }}>{data.title}</Typography>
+                            <Typography variant="h1" sx={{ fontSize: '32px' }}>{data.title}</Typography>
 
-                            <Typography variant="body1" sx={{ fontSize: 32, fontWeight: 500 }}>
+                            <Typography variant="body1" sx={{ fontSize: '32px', fontWeight: 500 }}>
                                 {data.price} ₽
                             </Typography>
                         </Box>
@@ -84,6 +83,6 @@ export default function AdDetailsPage() {
                     </Box>
                 </Box>
             )}
-        </Card>
+        </Box>
     );
 }

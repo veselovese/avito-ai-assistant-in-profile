@@ -3,16 +3,13 @@ import { useQuery } from '@tanstack/react-query';
 import { getAdById } from '../../entities/ad/api/api';
 import { useUpdateAd } from '../../entities/ad/api/useUpdateAd';
 import { FormParams } from '../../features/ad-edit/ui/form-params';
-import { CircularProgress } from '@mui/material';
+import { CircularProgress, Grid, Box, Typography, Divider } from '@mui/material';
 import { useGenerateDescription, useSuggestPrice } from '../../entities/ad/api/useUpdateAd';
 
 import {
     TextField,
     Button,
-    Select,
     MenuItem,
-    Box,
-    Typography,
     Popover,
     Alert,
 } from '@mui/material';
@@ -149,44 +146,106 @@ export default function AdEditPage() {
     };
 
     return (
-        <Box p={3}>
-            <Typography>Редактирование</Typography>
+        <Grid component="form" sx={{ maxWidth: 'calc(100% - 64px)', m: '0 auto', py: '32px', display: 'flex', flexDirection: 'column', gap: '18px' }}>
+            <Typography variant="h1" sx={{ fontSize: '32px' }}>
+                Редактирование объявления
+            </Typography>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: '8px', maxWidth: '50%' }}>
+                <label htmlFor="ad-category" style={{ display: 'block' }}>
+                    Категория
+                </label>
+                <TextField
+                    id="ad-category"
+                    select
+                    value={form.category}
+                    onChange={(e) => handleChange('category', e.target.value)}
+                    fullWidth
+                    variant="outlined"
+                    required>
+                    <MenuItem value="auto">Авто</MenuItem>
+                    <MenuItem value="real_estate">Недвижимость</MenuItem>
+                    <MenuItem value="electronics">Электроника</MenuItem>
+                </TextField>
+            </Box>
+            <Divider />
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: '8px', maxWidth: '50%' }}>
+                <label htmlFor="ad-title" style={{ display: 'block' }}>
+                    Название
+                </label>
+                <TextField
+                    id='ad-title'
+                    value={form.title}
+                    onChange={(e) => handleChange('title', e.target.value)}
+                    fullWidth
+                    required
+                />
 
-            <Select
-                value={form.category}
-                onChange={(e) => handleChange('category', e.target.value)}
-            >
-                <MenuItem value="auto">Авто</MenuItem>
-                <MenuItem value="real_estate">Недвижимость</MenuItem>
-                <MenuItem value="electronics">Электроника</MenuItem>
-            </Select>
+            </Box>
+            <Divider />
+            <Box sx={{ display: 'flex', gap: '24px', alignItems: 'end', }}>
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: '8px', maxWidth: '50%', width: '100%' }}>
+                    <label htmlFor="ad-price" style={{ display: 'block' }}>
+                        Цена
+                    </label>
+                    <TextField
+                        id="ad-price"
+                        type="number"
+                        value={form.price}
+                        onChange={(e) => handleChange('price', Number(e.target.value))}
+                        fullWidth
+                        required
+                        sx={{ width: '100%', }}
+                    />
+                </Box>
+                <Button
+                    variant='outlined'
+                    color='warning'
+                    onClick={handleAskPrice}
+                    disabled={genPrice.isPending}
+                    startIcon={genPrice.isPending ? <CircularProgress size={16} /> : null}
+                    fullWidth
+                    sx={{ maxWidth: 'fit-content', fontSize: '14px', fontWeight: 400, p: '5px 9.5px', lineHeight: '100%', minHeight: '32px' }}
+                >
+                    {genPrice.isPending ? 'Выполняется запрос' : 'Узнать рыночную цену'}
+                </Button>
+            </Box>
+            <Divider />
+            <Grid sx={{ maxWidth: '50%' }}>
+                <Typography variant='body1' sx={{ mb: '8px' }}>Характеристики</Typography>
+                <FormParams form={form} setForm={setForm} />
+            </Grid>
+            <Divider />
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                <TextField
+                    label="Описание"
+                    value={form.description || ''}
+                    onChange={(e) => handleChange('description', e.target.value)}
+                    fullWidth
+                    multiline
+                    sx={{ maxWidth: 'auto' }}
+                />
+                <Button
+                    variant="outlined"
+                    color='warning'
+                    onClick={handleAskDesc}
+                    disabled={genDesc.isPending}
+                    startIcon={genDesc.isPending ? <CircularProgress size={16} /> : null}
+                    sx={{ alignSelf: 'flex-start' }}
+                >
+                    {genDesc.isPending ? 'Генерация...' : descButtonText}
+                </Button>
+            </Box>
+            < Box sx={{ display: 'flex', gap: '10px', mt: '16px' }
+            }>
+                <Button variant="contained" onClick={handleSave}>
+                    Сохранить
+                </Button>
+                <Button onClick={() => navigate(`/ads/${id}`)}>
+                    Отменить
+                </Button>
+            </Box >
 
-            <TextField
-                label="Название"
-                value={form.title}
-                onChange={(e) => handleChange('title', e.target.value)}
-                fullWidth
-                sx={{ mt: 2 }}
-            />
-
-            <TextField
-                label="Цена"
-                type="number"
-                value={form.price}
-                onChange={(e) => handleChange('price', Number(e.target.value))}
-                fullWidth
-                sx={{ mt: 2 }}
-            />
-
-            <Button
-                variant="outlined"
-                onClick={handleAskPrice}
-                disabled={genPrice.isPending}
-                startIcon={genPrice.isPending ? <CircularProgress size={16} /> : null}
-            >
-                {genPrice.isPending ? 'Считаем цену...' : 'Узнать рыночную цену'}
-            </Button>
-            <Popover
+            < Popover
                 open={Boolean(priceAnchorEl)}
                 anchorEl={priceAnchorEl}
                 onClose={closePricePopup}
@@ -223,27 +282,8 @@ export default function AdEditPage() {
                         </>
                     ) : null}
                 </Box>
-            </Popover>
+            </Popover >
 
-            <FormParams form={form} setForm={setForm} />
-
-            <TextField
-                label="Описание"
-                value={form.description || ''}
-                onChange={(e) => handleChange('description', e.target.value)}
-                fullWidth
-                multiline
-                rows={4}
-                sx={{ mt: 2 }}
-            />
-            <Button
-                variant="outlined"
-                onClick={handleAskDesc}
-                disabled={genDesc.isPending}
-                startIcon={genDesc.isPending ? <CircularProgress size={16} /> : null}
-            >
-                {genDesc.isPending ? 'Генерация...' : descButtonText}
-            </Button>
             <Popover
                 open={Boolean(descAnchorEl)}
                 anchorEl={descAnchorEl}
@@ -276,16 +316,6 @@ export default function AdEditPage() {
                     ) : null}
                 </Box>
             </Popover>
-
-            <Box sx={{ mt: 3, display: 'flex', gap: 2 }}>
-                <Button onClick={handleSave}>
-                    Сохранить
-                </Button>
-
-                <Button onClick={() => navigate(`/ads/${id}`)}>
-                    Отменить
-                </Button>
-            </Box>
-        </Box>
+        </Grid >
     );
 }

@@ -64,7 +64,6 @@ export const theme = createTheme({
                 },
             },
         },
-
         MuiCard: {
             styleOverrides: {
                 root: {
@@ -73,5 +72,38 @@ export const theme = createTheme({
                 },
             },
         },
-    }
+        MuiTextField: {
+            styleOverrides: {
+                root: {
+                    '& .MuiOutlinedInput-root': {
+                        borderRadius: 8,
+                        fontSize: '14px',
+                        fontWeight: 400,
+                        padding: 0,
+                        minHeight: '32px',
+                        maxHeight: '32px',
+
+                        '&:hover .MuiOutlinedInput-notchedOutline': {
+                            borderColor: 'text.secondary',
+                        },
+
+                        '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                            borderColor: 'primary.main',
+                            borderWidth: 2,
+                        },
+                    },
+                    '& .MuiInputLabel-root': {
+                        color: 'text.secondary',
+                    },
+                    '& .MuiOutlinedInput-input': {
+                        padding: '0 12px',
+                        minHeight: '32px',
+                        maxHeight: '32px',
+                        display: 'flex',
+                        alignItems: 'center',
+                }
+            },
+        },
+    },
+}
 });
