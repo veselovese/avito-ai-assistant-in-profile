@@ -3,9 +3,11 @@ import { useQuery } from '@tanstack/react-query';
 import { getAdById } from '../../entities/ad/api/api';
 import { useUpdateAd } from '../../entities/ad/api/useUpdateAd';
 import { FormParams } from '../../features/ad-edit/ui/form-params';
-import { CircularProgress, Grid, Box, Typography, Divider } from '@mui/material';
+import { CircularProgress, Grid, Box, Typography, Divider, Snackbar } from '@mui/material';
 import { useGenerateDescription, useSuggestPrice } from '../../entities/ad/api/useUpdateAd';
 import LightbulbOutlinedIcon from '@mui/icons-material/LightbulbOutlined';
+import RefreshOutlinedIcon from '@mui/icons-material/RefreshOutlined';
+import HourglassBottomOutlinedIcon from '@mui/icons-material/HourglassBottomOutlined';
 
 import {
     TextField,
@@ -39,6 +41,46 @@ export default function AdEditPage() {
     const navigate = useNavigate();
     const genDesc = useGenerateDescription();
     const genPrice = useSuggestPrice();
+
+    const [errors, setErrors] = useState<{ title?: string, category?: string, price?: string }>({});
+    const [touched, setTouched] = useState<{ title?: boolean, category?: boolean, price?: boolean }>({});
+
+    const [snackbar, setSnackbar] = useState<{
+        open: boolean;
+        type: 'success' | 'error';
+        message: string;
+    }>({
+        open: false,
+        type: 'success',
+        message: '',
+    });
+
+    const validate = (field: string, value: any) => {
+        let error = '';
+
+        if (field === 'title') {
+            if (!value || value.trim() === '') {
+                error = 'Название должно быть заполнено';
+            }
+        }
+
+        if (field === 'category') {
+            if (!value || value.trim() === '') {
+                error = 'Категория должна быть указана';
+            }
+        }
+
+        if (field === 'price') {
+            if (!value || value <= 0) {
+                error = 'Стоимость должна быть заполнена';
+            }
+        }
+
+        setErrors(prev => ({
+            ...prev,
+            [field]: error || undefined,
+        }));
+    };
 
     const [form, setForm] = useState<any>(null);
 
@@ -105,7 +147,11 @@ export default function AdEditPage() {
         </Button>
     </Box>;
 
-    const descButtonText = form.description ? 'Улучшить описание' : 'Придумать описание';
+    const descButtonText = form.description ? 'Улучшить описание' : genDesc.isError || genDesc.isSuccess ? 'Повторить запрос' : 'Придумать описание';
+    const priceButtonText = genPrice.isError || genPrice.isSuccess ? 'Повторить запрос' : 'Узнать рыночную цену';
+    const descAiButtonIcon = genDesc.isError || genDesc.isSuccess ? <RefreshOutlinedIcon /> : <LightbulbOutlinedIcon />;
+    const priceAiButtonIcon = genPrice.isError || genPrice.isSuccess ? <RefreshOutlinedIcon /> : <LightbulbOutlinedIcon />;
+    const isFormValid = !!form.title?.trim() && !!form.category?.trim() && typeof form.price === 'number' && form.price > 0;;
 
     const handleAskPrice = (e: React.MouseEvent<HTMLElement>) => {
         setPriceAi({
@@ -185,13 +231,40 @@ export default function AdEditPage() {
         }));
     };
 
+    const cleanParams = (params: Record<string, any>) => {
+        return Object.fromEntries(
+            Object.entries(params).filter(([_, value]) => {
+                return value !== '' && value !== null && value !== undefined;
+            })
+        );
+    };
+
     const handleSave = () => {
+        const cleanedData = {
+            ...form,
+            params: cleanParams(form.params),
+        };
         updateMutation.mutate(
-            { id: id!, data: form },
+            { id: id!, data: cleanedData },
             {
                 onSuccess: () => {
                     localStorage.removeItem(storageKey);
-                    navigate(`/ads/${id}`);
+                    setSnackbar({
+                        open: true,
+                        type: 'success',
+                        message: 'Изменения сохранены',
+                    });
+
+                    setTimeout(() => {
+                        navigate(`/ads/${id}`);
+                    }, 1000);
+                },
+                onError: () => {
+                    setSnackbar({
+                        open: true,
+                        type: 'error',
+                        message: 'При попытке сохранить изменения произошла ошибка. Попробуйте ещё раз или зайдите позже.',
+                    });
                 },
             }
         );
@@ -204,7 +277,7 @@ export default function AdEditPage() {
             </Typography>
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: '8px', maxWidth: '50%' }}>
                 <label htmlFor="ad-category" style={{ display: 'block' }}>
-                    Категория
+                    <span style={{ color: 'red', marginLeft: '2px' }}>*</span> Категория
                 </label>
                 <TextField
                     id="ad-category"
@@ -213,6 +286,12 @@ export default function AdEditPage() {
                     onChange={(e) => handleChange('category', e.target.value)}
                     fullWidth
                     variant="outlined"
+                    onBlur={() => {
+                        setTouched(prev => ({ ...prev, category: true }));
+                        validate('category', form.category);
+                    }}
+                    error={touched.category && !!errors.category}
+                    helperText={touched.category && errors.category}
                     required>
                     <MenuItem value="auto">Авто</MenuItem>
                     <MenuItem value="real_estate">Недвижимость</MenuItem>
@@ -222,13 +301,19 @@ export default function AdEditPage() {
             <Divider />
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: '8px', maxWidth: '50%' }}>
                 <label htmlFor="ad-title" style={{ display: 'block' }}>
-                    Название
+                    <span style={{ color: 'red', marginLeft: '2px' }}>*</span> Название
                 </label>
                 <TextField
                     id='ad-title'
                     value={form.title}
                     onChange={(e) => handleChange('title', e.target.value)}
                     fullWidth
+                    onBlur={() => {
+                        setTouched(prev => ({ ...prev, title: true }));
+                        validate('title', form.title);;
+                    }}
+                    error={touched.title && !!errors.title}
+                    helperText={touched.title && errors.title}
                     required
                 />
 
@@ -237,27 +322,33 @@ export default function AdEditPage() {
             <Box sx={{ display: 'flex', gap: '24px', alignItems: 'end', }}>
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: '8px', maxWidth: '50%', width: '100%' }}>
                     <label htmlFor="ad-price" style={{ display: 'block' }}>
-                        Цена
+                        <span style={{ color: 'red', marginLeft: '2px' }}>*</span> Цена
                     </label>
                     <TextField
                         id="ad-price"
                         type="number"
                         value={form.price}
-                        onChange={(e) => handleChange('price', Number(e.target.value))}
+                        onChange={(e) => handleChange('price', e.target.value === '' ? '' : Number(e.target.value))}
                         fullWidth
+                        onBlur={() => {
+                            setTouched(prev => ({ ...prev, price: true }));
+                            validate('price', form.price);;
+                        }}
+                        error={touched.price && !!errors.price}
+                        helperText={touched.price && errors.price}
                         required
                         sx={{ width: '100%', }}
                     />
                 </Box>
                 <Button
-                    startIcon={<LightbulbOutlinedIcon />}
+                    startIcon={genPrice.isPending ? <HourglassBottomOutlinedIcon /> : priceAiButtonIcon}
                     variant='outlined'
                     color='warning'
                     onClick={handleAskPrice}
                     disabled={genPrice.isPending}
                     sx={{ maxWidth: 'fit-content', fontSize: '14px', fontWeight: 400, p: '5px 9.5px', lineHeight: '100%', minHeight: '32px', textTransform: 'none', borderRadius: '8px', boxShadow: 'none', }}
                 >
-                    {genPrice.isPending ? 'Выполняется запрос' : 'Узнать рыночную цену'}
+                    {genPrice.isPending ? 'Выполняется запрос' : priceButtonText}
                 </Button>
             </Box>
             <Divider />
@@ -276,6 +367,7 @@ export default function AdEditPage() {
                     onChange={(e) => handleChange('description', e.target.value)}
                     fullWidth
                     multiline
+                    placeholder='Описание'
                     sx={{
                         maxWidth: 'auto',
                         '& .MuiOutlinedInput-input': {
@@ -288,12 +380,24 @@ export default function AdEditPage() {
                         '& .MuiOutlinedInput-root': {
                             minHeight: '60px',
                             maxHeight: 'none',
-                        }
+                        },
+                        '& .MuiOutlinedInput-notchedOutline': {
+                            borderColor: !form.description ? 'warning.main' : 'rgba(0, 0, 0, 0.23)',
+                        },
+
+                        '&:hover .MuiOutlinedInput-notchedOutline': {
+                            borderColor: !form.description ? 'warning.main' : 'rgba(0, 0, 0, 0.87)',
+                        },
+
+                        '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                            borderColor: !form.description ? 'warning.main' : 'primary.main',
+                        },
 
                     }}
+                    color={!form.description ? 'warning' : 'primary'}
                 />
                 <Button
-                    startIcon={<LightbulbOutlinedIcon />}
+                    startIcon={genDesc.isPending ? <HourglassBottomOutlinedIcon /> : descAiButtonIcon}
                     variant="outlined"
                     color='warning'
                     onClick={handleAskDesc}
@@ -310,7 +414,8 @@ export default function AdEditPage() {
                     '&:hover': {
                         boxShadow: 'none',
                     }
-                }}>
+                }}
+                    disabled={!isFormValid || updateMutation.isPending}>
                     Сохранить
                 </Button>
                 <Button onClick={() => navigate(`/ads/${id}`)} sx={{ p: '8px 12px', lineHeight: '1.5', fontSize: '16px', fontWeight: 400, textTransform: 'none', borderRadius: '8px', boxShadow: 'none', color: 'text.secondary', bgcolor: '#D9D9D9' }}>
@@ -323,53 +428,72 @@ export default function AdEditPage() {
                 anchorEl={priceAi.anchorEl}
                 onClose={() => { }}
                 disableEscapeKeyDown
-                anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
-                sx={{ p: 2 }}
+                anchorOrigin={{ vertical: 'top', horizontal: 'left' }}
+                transformOrigin={{ vertical: 'bottom', horizontal: 'left' }}
+                sx={{ pointerEvents: 'none' }}
+                slotProps={{
+                    paper: {
+                        sx: {
+                            pointerEvents: 'auto',
+                            overflow: 'visible',
+                            mb: 1.5,
+                            boxShadow: '0px 4px 12px rgba(0, 0, 0, 0.1)',
+                        },
+                    },
+                }}
                 disableScrollLock
                 disableAutoFocus
                 disableEnforceFocus
                 disableRestoreFocus
             >
-                <Box sx={{ p: 2, maxWidth: 400 }}>
+                <Box sx={{ p: '8px', maxWidth: '332px' }}>
                     {priceAi.status === 'error' ? (
                         <>
-                            <Alert severity="error" sx={{ mb: 2 }}>
+                            <Alert severity="error" sx={{ mb: '8px' }}>
                                 {priceAi.error || 'Произошла ошибка при запросе к AI'}
                             </Alert>
-                            <Typography sx={{ mb: 2 }}>
+                            <Typography variant='subtitle2' sx={{ mb: '8px' }}>
                                 Попробуйте повторить запрос или закройте уведомление
                             </Typography>
 
-                            <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1 }}>
-                                <Button onClick={handleAskPrice} size="small">
-                                    Повторить запрос
-                                </Button>
-                                <Button onClick={closePricePopup} size="small">
+                            <Box sx={{ display: 'flex', justifyContent: 'flex-start', }}>
+                                <Button onClick={closePricePopup} variant='outlined' color='error' sx={{ textTransform: 'none', p: '5px 12px', maxHeight: '32px', borderRadius: '8px' }}>
                                     Закрыть
                                 </Button>
                             </Box>
                         </>
                     ) : priceAi.result ? (
                         <>
-                            <Typography variant="body2" sx={{ whiteSpace: 'pre-line', mb: 2 }}>
+                            <Typography variant="body2" sx={{ mb: '8px' }}>
+                                Ответ AI:
+                            </Typography>
+                            <Typography variant="subtitle2" sx={{ whiteSpace: 'pre-line', mb: '8px' }}>
                                 {priceAi.result}
                             </Typography>
 
-                            <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1 }}>
-                                <Button onClick={closePricePopup} size="small">
-                                    Закрыть
-                                </Button>
+                            <Box sx={{ display: 'flex', justifyContent: 'flex-start', gap: 1 }}>
                                 <Button
                                     onClick={() => {
                                         const numericPrice = parsePriceFromAI(priceAi.result!);
                                         if (numericPrice > 0) {
                                             setForm((prev: any) => ({ ...prev, price: numericPrice }));
                                         }
+                                        closePricePopup();
                                     }}
                                     variant="contained"
-                                    size="small"
+                                    sx={{
+                                        textTransform: 'none', p: '5px 12px', maxHeight: '32px', borderRadius: '8px', boxShadow: 'none',
+                                        '&:hover': {
+                                            boxShadow: 'none',
+                                        }
+                                    }}
                                 >
                                     Применить
+                                </Button>
+                                <Button onClick={closePricePopup} variant='outlined' sx={{
+                                    textTransform: 'none', p: '5px 12px', maxHeight: '32px', borderRadius: '8px', boxShadow: 'none',
+                                }}>
+                                    Закрыть
                                 </Button>
                             </Box>
                         </>
@@ -382,61 +506,91 @@ export default function AdEditPage() {
                 anchorEl={descAi.anchorEl}
                 onClose={() => { }}
                 disableEscapeKeyDown
-                anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
-                disableScrollLock
+                anchorOrigin={{ vertical: 'top', horizontal: 'left' }}
+                transformOrigin={{ vertical: 'bottom', horizontal: 'left' }}
+                sx={{ pointerEvents: 'none' }}
+                slotProps={{
+                    paper: {
+                        sx: {
+                            pointerEvents: 'auto',
+                            overflow: 'visible',
+                            mb: '16px',
+                            boxShadow: '0px 4px 12px rgba(0, 0, 0, 0.1)',
+                        },
+                    },
+                }} disableScrollLock
                 disableAutoFocus
                 disableEnforceFocus
                 disableRestoreFocus
             >
-                <Box sx={{ p: 2, maxWidth: 500 }}>
+                <Box sx={{ p: '8px', maxWidth: '332px' }}>
                     {descAi.status === 'error' ? (
                         <>
-                            <Alert severity="error" sx={{ mb: 2 }}>
+                            <Alert severity="error" sx={{ mb: '8px' }}>
                                 {descAi.error || 'Произошла ошибка при запросе к AI'}
                             </Alert>
-                            <Typography sx={{ mb: 2 }}>
+                            <Typography variant='subtitle2' sx={{ mb: '8px ' }}>
                                 Попробуйте повторить запрос или закройте уведомление
                             </Typography>
 
-                            <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1 }}>
-                                <Button onClick={handleAskDesc} size="small">
-                                    Повторить запрос
-                                </Button>
-                                <Button onClick={closeDescPopup} size="small">
+                            <Box sx={{ display: 'flex', justifyContent: 'flex-start', }}>
+                                <Button onClick={closeDescPopup} variant='outlined' color='error' sx={{ textTransform: 'none', p: '5px 12px', maxHeight: '32px', borderRadius: '8px' }}>
                                     Закрыть
                                 </Button>
                             </Box>
                         </>
                     ) : descAi.result ? (
                         <>
-                            <Typography
-                                variant="body2"
-                                sx={{ whiteSpace: 'pre-line', mb: 2, maxHeight: 300, overflowY: 'auto' }}
-                            >
+                            <Typography variant="body2" sx={{ mb: '8px' }}>
+                                Ответ AI:
+                            </Typography>
+                            <Typography variant="subtitle2" sx={{ whiteSpace: 'pre-line', mb: '8px' }}>
                                 {descAi.result}
                             </Typography>
 
-                            <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1 }}>
-                                <Button onClick={closeDescPopup} size="small">
-                                    Закрыть
-                                </Button>
+                            <Box sx={{ display: 'flex', justifyContent: 'flex-start', gap: 1 }}>
                                 <Button
                                     onClick={() => {
                                         setForm((prev: any) => ({
                                             ...prev,
                                             description: descAi.result,
                                         }));
+                                        closeDescPopup();
                                     }}
                                     variant="contained"
-                                    size="small"
+                                    sx={{
+                                        textTransform: 'none', p: '5px 12px', maxHeight: '32px', borderRadius: '8px', boxShadow: 'none',
+                                        '&:hover': {
+                                            boxShadow: 'none',
+                                        }
+                                    }}
                                 >
                                     Применить
+                                </Button>
+                                <Button onClick={closeDescPopup} variant='outlined' sx={{
+                                    textTransform: 'none', p: '5px 12px', maxHeight: '32px', borderRadius: '8px', boxShadow: 'none',
+                                }}>
+                                    Закрыть
                                 </Button>
                             </Box>
                         </>
                     ) : null}
                 </Box>
             </Popover>
+            <Snackbar
+                open={snackbar.open}
+                autoHideDuration={3000}
+                onClose={() => setSnackbar(prev => ({ ...prev, open: false }))}
+                anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+            >
+                <Alert
+                    onClose={() => setSnackbar(prev => ({ ...prev, open: false }))}
+                    severity={snackbar.type}
+                    sx={{ width: '100%' }}
+                >
+                    {snackbar.message}
+                </Alert>
+            </Snackbar>
         </Grid >
     );
 }
