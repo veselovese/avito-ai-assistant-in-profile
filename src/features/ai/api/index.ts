@@ -1,6 +1,7 @@
 import axios from 'axios';
+import { AI_URL } from '../../../shared/config/env';
 
-const OLLAMA_URL = 'http://localhost:11434/api/generate';
+const OLLAMA_URL = AI_URL + '/api/generate';
 
 const callOllama = async (prompt: string) => {
   try {

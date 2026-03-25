@@ -2,7 +2,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { updateAdById } from './api';
 import type { Ad, AdUpdateIn } from '../model/types';
 import { getDescriptionPrompt, getPricePrompt } from '../../../features/ai/model/promts';
-import { generateDescription, suggestPrice } from '../../../features/ai/api/api';
+import { generateDescription, suggestPrice } from '../../../features/ai/api';
 
 export const useUpdateAd = () => {
   const queryClient = useQueryClient();
