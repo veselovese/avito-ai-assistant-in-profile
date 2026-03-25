@@ -33,7 +33,7 @@ export const useSuggestPrice = () => {
     mutationFn: async (ad: Ad) => {
       const prompt = getPricePrompt(ad);
       const priceSuggestion = await suggestPrice(prompt);
-      return parseInt(priceSuggestion.replace(/\D/g, ''), 10) || 0; 
+      return priceSuggestion; 
     },
   });
 }

@@ -74,9 +74,9 @@ export const AdParams = ({ ad }: { ad: Ad }) => {
             <Typography variant="subtitle2" sx={{ mt: '4px' }}>
               У объявления не заполнены поля:
             </Typography>
-            <List sx={{ p: 0, listStyleType: 'disc', color: 'text.secondary' }}>
+            <List sx={{ p: 0, pl: 2, listStyleType: 'disc', color: 'text.primary' }}>
               {emptyParams.map((label) => (
-                <ListItem key={label} sx={{ p: '0 16px', display: 'list-item' }}>
+                <ListItem key={label} sx={{ p: '0 4px', display: 'list-item', }}>
                   <Typography variant="subtitle2">{label}</Typography>
                 </ListItem>
               ))}

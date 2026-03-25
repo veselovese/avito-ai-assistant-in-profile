@@ -3,6 +3,8 @@ import { useQuery } from '@tanstack/react-query';
 import { getAdById } from '../../entities/ad/api/api';
 import { format } from 'date-fns';
 import { ru } from 'date-fns/locale';
+import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
+import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos';
 
 import {
     Typography,
@@ -28,7 +30,11 @@ export default function AdDetailsPage() {
     return (
         <Box component="section" sx={{ maxWidth: 'calc(100% - 64px)', m: '0 auto', py: '32px', display: 'flex', flexDirection: 'column', gap: '32px' }}>
             <Box>
-                <Button onClick={() => navigate('/ads')}>← Назад</Button>
+                <Button startIcon={<ArrowBackIosIcon />} onClick={() => navigate('/ads')} sx={{
+                    textTransform: 'none', mb: '12px', p: '8px 12px', lineHeight: '1.25', maxHeight: '38px', fontSize: '16px', fontWeight: 400, borderRadius: '8px', '& .MuiButton-startIcon > *:nth-of-type(1)': {
+                        fontSize: '14px',
+                    }
+                }}>Назад</Button>
                 {data && (
                     <Box sx={{}}>
                         <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
@@ -41,8 +47,15 @@ export default function AdDetailsPage() {
 
                         <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: '12px' }}>
                             <Button
+                                endIcon={<EditOutlinedIcon />}
                                 variant="contained"
                                 onClick={() => navigate(`/ads/${id}/edit`)}
+                                sx={{
+                                    p: '8px 12px', lineHeight: '1.25', maxHeight: '38px', fontSize: '16px', fontWeight: 400, textTransform: 'none', borderRadius: '8px', boxShadow: 'none',
+                                    '&:hover': {
+                                        boxShadow: 'none',
+                                    }
+                                }}
                             >
                                 Редактировать
                             </Button>
@@ -67,31 +80,35 @@ export default function AdDetailsPage() {
             <Divider flexItem />
 
             {isLoading && <CircularProgress sx={{ m: '0 auto', display: 'flex', mt: '100px' }} />}
-            {isError && <Box sx={{ m: '0 auto', display: 'flex', mt: '100px', alignItems: 'center', flexDirection: 'column', gap: '16px' }}>
-                <Typography >Упс, что-то пошло не так. Поробуйте обновить страницу сейчас или чуть позже</Typography>
-                <Button
-                    variant="outlined"
-                    onClick={() => refetch()}
-                    disabled={isLoading}
-                    sx={{ fontSize: '14px', fontWeight: 400, textTransform: 'none' }}
-                >
-                    Обновить страницу
-                </Button>
-            </Box>}
-            {data && (
-                <Box sx={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
-                    <Box sx={{ display: 'flex', gap: '32px' }}>
-                        <Skeleton variant="rectangular" width='480px' height='360px' animation="wave" />
-                        <AdParams ad={data} />
-                    </Box>
-                    <Box sx={{ maxWidth: '480px' }}>
-                        <Typography variant='body1' sx={{ fontSize: '24px' }}>Описание</Typography>
-                        <Typography variant='subtitle1' sx={{ mt: '16px' }}>
-                            {data.description || 'Описание отсутствует'}
-                        </Typography>
-                    </Box>
+            {
+                isError && <Box sx={{ m: '0 auto', display: 'flex', mt: '100px', alignItems: 'center', flexDirection: 'column', gap: '16px' }}>
+                    <Typography >Упс, что-то пошло не так. Поробуйте обновить страницу сейчас или чуть позже</Typography>
+                    <Button
+                        variant="outlined"
+                        onClick={() => refetch()}
+                        disabled={isLoading}
+                        sx={{ fontSize: '14px', fontWeight: 400, textTransform: 'none', borderRadius: '8px' }}
+                    >
+                        Обновить страницу
+                    </Button>
                 </Box>
-            )}
-        </Box>
+            }
+            {
+                data && (
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
+                        <Box sx={{ display: 'flex', gap: '32px' }}>
+                            <Skeleton variant="rectangular" width='480px' height='360px' animation="wave" />
+                            <AdParams ad={data} />
+                        </Box>
+                        <Box sx={{ maxWidth: '480px' }}>
+                            <Typography variant='body1' sx={{ fontSize: '24px' }}>Описание</Typography>
+                            <Typography variant='subtitle1' sx={{ mt: '16px' }}>
+                                {data.description || 'Описание отсутствует'}
+                            </Typography>
+                        </Box>
+                    </Box>
+                )
+            }
+        </Box >
     );
 }

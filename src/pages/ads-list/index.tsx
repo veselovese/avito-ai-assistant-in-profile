@@ -250,7 +250,7 @@ export default function AdsListPage() {
                             variant="outlined"
                             onClick={() => refetch()}
                             disabled={isLoading}
-                            sx={{ fontSize: '14px', fontWeight: 400, textTransform: 'none' }}
+                            sx={{ fontSize: '14px', fontWeight: 400, textTransform: 'none', borderRadius: '8px' }}
                         >
                             Обновить страницу
                         </Button>
